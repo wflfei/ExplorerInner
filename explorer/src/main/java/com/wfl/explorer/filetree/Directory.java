@@ -1,6 +1,9 @@
 package com.wfl.explorer.filetree;
 
+import android.app.Activity;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.widget.ImageView;
 
 import com.wfl.explorer.R;
 
@@ -40,7 +43,12 @@ public class Directory extends AbsFileTree {
 
     @Override
     public int getIconRes() {
-        return R.drawable.directory;
+        return R.drawable.type_icon_directory;
+    }
+
+    @Override
+    public void displayIcon(Activity activity, ImageView imageView) {
+
     }
 
     @Override

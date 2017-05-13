@@ -1,7 +1,10 @@
 package com.wfl.explorer.filetree;
 
+import android.app.Activity;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.widget.ImageView;
 
 import java.io.File;
 import java.util.List;
@@ -15,6 +18,7 @@ public interface FileTree {
     FileTree back();
     FileTree next(Context context, String childName);
     int getIconRes();
+    void displayIcon(Activity activity, ImageView imageView);
     String getName();
     List<FileTree> getFileLists();
     

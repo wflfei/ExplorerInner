@@ -1,6 +1,13 @@
-package com.wfl.explorer.filehelper;
+package com.wfl.explorer.filetype;
 
 import android.content.Context;
+
+import com.wfl.explorer.filetype.types.AnyType;
+import com.wfl.explorer.filetype.types.ApkType;
+import com.wfl.explorer.filetype.types.ArchiveType;
+import com.wfl.explorer.filetype.types.ImageType;
+import com.wfl.explorer.filetype.types.SqliteType;
+import com.wfl.explorer.filetype.types.TextType;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -22,6 +29,9 @@ public class FileTypeHelper {
     private void registerFileTypes() {
         types.add(new TextType());
         types.add(new ImageType());
+        types.add(new SqliteType());
+        types.add(new ApkType());
+        types.add(new ArchiveType());
     }
     
     

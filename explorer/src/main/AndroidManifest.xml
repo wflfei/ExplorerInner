@@ -4,7 +4,8 @@
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
-    <application>
+    <application
+        android:name=".base.BaseApplication">
         <activity
             android:name=".activity.ExplorerActivity"
             android:label="私有文件"

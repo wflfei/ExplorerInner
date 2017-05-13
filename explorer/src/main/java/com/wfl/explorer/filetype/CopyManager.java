@@ -1,7 +1,6 @@
-package com.wfl.explorer.filehelper;
+package com.wfl.explorer.filetype;
 
 import android.content.Context;
-import android.support.v4.content.FileProvider;
 
 import java.io.File;
 import java.io.FileInputStream;

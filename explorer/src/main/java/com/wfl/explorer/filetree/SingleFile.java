@@ -1,12 +1,14 @@
 package com.wfl.explorer.filetree;
 
+import android.app.Activity;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.widget.ImageView;
 
 import com.wfl.explorer.R;
-import com.wfl.explorer.filehelper.FileTypeHelper;
+import com.wfl.explorer.filetype.FileTypeHelper;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.util.List;
 
 /**
@@ -33,7 +35,12 @@ public class SingleFile extends AbsFileTree {
 
     @Override
     public int getIconRes() {
-        return R.drawable.file;
+        return fileTypeHelper.getFileType().getIconRes(getFile());
+    }
+
+    @Override
+    public void displayIcon(Activity activity, ImageView imageView) {
+        fileTypeHelper.getFileType().displayIcon(activity, imageView, getFile());
     }
 
     @Override

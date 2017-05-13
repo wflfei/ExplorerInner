@@ -13,13 +13,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.wfl.explorer.R;
-import com.wfl.explorer.base.BaseActivity;
 import com.wfl.explorer.base.BaseFragment;
-import com.wfl.explorer.filehelper.CopyManager;
+import com.wfl.explorer.filetype.CopyManager;
 import com.wfl.explorer.filetree.AbsFileTree;
 import com.wfl.explorer.filetree.FileTree;
-
-import org.w3c.dom.Text;
 
 /**
  * Created by wfl on 16/7/29.
@@ -111,7 +108,16 @@ public class DirFragment extends BaseFragment implements FragmentBackHandler, Co
 
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
-            holder.iconImg.setImageResource(mFileTree.getFileLists().get(position).getIconRes());
+            int iconRedId = mFileTree.getFileLists().get(position).getIconRes();
+            if (iconRedId != 0) {
+                holder.iconImg.setImageResource(iconRedId);
+            } else {
+                mFileTree.getFileLists().get(position).displayIcon(getActivity(), holder.iconImg);
+            }
+//            } else /*if (mFileTree.getFileLists().get(position).getIconDrawable() != null)*/ {
+//                holder.iconImg.setImageDrawable(mFileTree.getFileLists().get(position).getIconDrawable());
+//            }
+
             String name = mFileTree.getFileLists().get(position).getName();
             if (!isRoot() && position == 0) {
                 name = "../" + name;
