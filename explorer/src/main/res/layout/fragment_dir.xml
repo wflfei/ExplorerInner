@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="#444444"
+    android:orientation="vertical">
+    
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/dir_recyclerview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+    
+    <Button
+        android:id="@+id/dir_copy_btn"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_alignParentBottom="true"
+        android:background="#EEEEEE"
+        android:textColor="#333333"
+        android:text="复制到这里"
+        android:visibility="gone"
+        />
+
+</RelativeLayout>
