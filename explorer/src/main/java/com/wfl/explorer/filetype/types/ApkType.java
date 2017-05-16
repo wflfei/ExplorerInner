@@ -72,6 +72,9 @@ public class ApkType extends BaseFileType {
         Resources res = getResource(context, apkPath);
         PackageManager pm = context.getPackageManager();
         PackageInfo info = pm.getPackageArchiveInfo(apkPath, PackageManager.GET_ACTIVITIES);
+        if (info == null) {
+            return null;
+        }
         ApplicationInfo appInfo = info.applicationInfo;
         if (appInfo.icon != 0) {
             Drawable icon = res.getDrawable(appInfo.icon);
