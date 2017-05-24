@@ -33,6 +33,11 @@ public class SQLiteWrapperImpl implements SQLiteWrapper {
     }
 
     @Override
+    public void open() {
+        open(0);
+    }
+
+    @Override
     public void open(int flags) {
         if (mValid) {
             try {

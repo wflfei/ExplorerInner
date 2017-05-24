@@ -18,6 +18,7 @@
         </activity>
         <activity android:name=".activity.TextViewActivity" />
         <activity android:name=".activity.ImageViewActivity"></activity>
+        <activity android:name=".viewer.sqlite.SQLiteViewActivity" />
     </application>
 
 </manifest>

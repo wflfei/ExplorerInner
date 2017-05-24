@@ -14,7 +14,8 @@ public interface SQLiteWrapper {
     boolean isValid();
     
     void open(int flags);
-    
+    void open();
+
     void close();
     
     List<String> getTables();

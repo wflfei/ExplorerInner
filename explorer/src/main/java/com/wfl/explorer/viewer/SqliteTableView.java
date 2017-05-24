@@ -7,34 +7,39 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.view.View;
 
+import java.util.List;
+
 /**
  * Created by wfl on 17/5/1.
  */
 
-public class SqliteView extends View {
+public class SqliteTableView extends View {
+    List<String> mColumnNames;
+    List<List<String>> mDatas;
+
+    private int column = 0;
+    private int num = 0;
+
     
-    
-    
-    public SqliteView(Context context) {
+    public SqliteTableView(Context context) {
         super(context);
     }
 
-    public SqliteView(Context context, AttributeSet attrs) {
+    public SqliteTableView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public SqliteView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public SqliteTableView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public SqliteView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    public SqliteTableView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        
     }
 }

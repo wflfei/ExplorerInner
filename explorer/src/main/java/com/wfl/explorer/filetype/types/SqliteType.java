@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.wfl.explorer.R;
 import com.wfl.explorer.filetype.BaseFileType;
+import com.wfl.explorer.viewer.sqlite.SQLiteViewActivity;
 
 import java.io.File;
 
@@ -21,6 +22,7 @@ public class SqliteType extends BaseFileType {
     @Override
     public void open(Context context, File file) {
         // TODO: 2017/5/13 open Sqlite database
+        SQLiteViewActivity.startViewDatabase(context, file.getAbsolutePath());
     }
 
     @Override
