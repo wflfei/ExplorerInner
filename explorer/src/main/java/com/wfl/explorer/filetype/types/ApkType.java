@@ -44,26 +44,6 @@ public class ApkType extends BaseFileType {
     }
 
     @Override
-    public Drawable getIconDrawable(File file) {
-        Context context = App.getInstance().getContext();
-        return getUninstallApkIcon(context, file.getAbsolutePath());
-//        PackageManager pm = context.getPackageManager();
-//        PackageInfo packageInfo = pm.getPackageArchiveInfo(file.getPath(), 0);
-//        packageInfo.applicationInfo.sourceDir = file.getAbsolutePath();
-//        packageInfo.applicationInfo.publicSourceDir = file.getAbsolutePath();
-//        Drawable iconDrawable = packageInfo.applicationInfo.loadIcon(packageManager);
-//        if(iconDrawable == null){
-//            return null;
-//        }
-//
-//        if(iconDrawable instanceof BitmapDrawable && ((BitmapDrawable) iconDrawable).getBitmap() == ((BitmapDrawable) packageManager.getDefaultActivityIcon()).getBitmap()){
-//            return null;
-//        }
-//
-//        return iconDrawable;
-    }
-
-    @Override
     public void displayIcon(Activity activity, ImageView imageView, File file) {
         imageView.setImageDrawable(getUninstallApkIcon(activity, file.getAbsolutePath()));
     }

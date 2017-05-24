@@ -14,6 +14,5 @@ public interface FileType {
     boolean isMine(File file);
     void open(Context context, File file);
     int getIconRes(File file);
-    Drawable getIconDrawable(File file);
     void displayIcon(Activity activity, ImageView imageView, File file);
 }

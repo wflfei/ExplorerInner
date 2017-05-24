@@ -37,11 +37,6 @@ public abstract class BaseFileType implements FileType {
     }
 
     @Override
-    public Drawable getIconDrawable(File file) {
-        return null;
-    }
-
-    @Override
     public void displayIcon(Activity activity, ImageView imageView, File file) {
 
     }
