@@ -34,7 +34,9 @@ public class SQLiteViewActivity extends BaseActivity {
     private FragmentManager mFragmentManager;
 
 
-
+    public SQLiteWrapper getSQLiteWrapper() {
+        return mSQLiteWrapper;
+    }
 
     public static void startViewDatabase(@NonNull Context context, String path) {
         if (TextUtils.isEmpty(path)) {
