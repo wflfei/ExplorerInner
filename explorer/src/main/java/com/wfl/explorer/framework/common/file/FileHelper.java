@@ -1,6 +1,7 @@
 package com.wfl.explorer.framework.common.file;
 
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
 import java.io.File;
 
@@ -22,4 +23,15 @@ public class FileHelper {
         }
         return name.substring(name.lastIndexOf(".") + 1);
     }
+
+    public static String getFileName(@NonNull String path) {
+        if (TextUtils.isEmpty(path)) {
+            return "";
+        }
+        if (!path.contains("/") || path.indexOf("/") == path.length() - 1) {
+            return path;
+        }
+        return path.substring(path.lastIndexOf("/") + 1);
+    }
+    
 }

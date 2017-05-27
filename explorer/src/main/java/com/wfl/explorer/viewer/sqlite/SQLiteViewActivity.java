@@ -6,7 +6,9 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.view.Menu;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -16,6 +18,7 @@ import com.wfl.explorer.R;
 import com.wfl.explorer.base.BaseActivity;
 import com.wfl.explorer.filehelper.sqlite.SQLiteWrapper;
 import com.wfl.explorer.filehelper.sqlite.SQLiteWrapperImpl;
+import com.wfl.explorer.framework.common.file.FileHelper;
 import com.wfl.explorer.framework.common.utils.IntentUtils;
 
 import java.util.List;
@@ -77,6 +80,12 @@ public class SQLiteViewActivity extends BaseActivity {
 
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        menu.add(1, 1, 1, "add");
+        return super.onCreateOptionsMenu(menu);
+    }
+
     private void showTables() {
         if (mTableFragment != null && mTableFragment.isAdded()) {
             mFragmentManager.beginTransaction().remove(mTableFragment).commit();
@@ -85,8 +94,17 @@ public class SQLiteViewActivity extends BaseActivity {
     }
 
     private void showTable(String tableName) {
+        setTitle(tableName);
         mTableFragment = SQLiteTableFragment.createInstance(tableName);
         mFragmentManager.beginTransaction().add(R.id.sqlite_view_table_frag_container, mTableFragment).addToBackStack("table").commit();
+        mFragmentManager.addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
+            @Override
+            public void onBackStackChanged() {
+                if (mTableFragment == null || !mTableFragment.isAdded()) {
+                    setTitle(FileHelper.getFileName(mPath));
+                }
+            }
+        });
     }
 
 
@@ -100,6 +118,7 @@ public class SQLiteViewActivity extends BaseActivity {
         mTables = mSQLiteWrapper.getTables();
         mSQLiteWrapper.close();
         showTables();
+        setTitle(FileHelper.getFileName(mPath));
     }
 
     @Override

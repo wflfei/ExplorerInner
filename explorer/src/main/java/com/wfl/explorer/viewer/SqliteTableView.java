@@ -13,11 +13,13 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.HorizontalScrollView;
 import android.widget.ScrollView;
 
 import com.wfl.explorer.framework.common.utils.DisplayUtils;
 import com.wfl.explorer.framework.common.utils.LogUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,7 +28,11 @@ import java.util.List;
 
 public class SqliteTableView extends ScrollView {
     private static int DEFAULT_COL_WIDTH;
+    private static int MAX_COL_WIDTH;
     private static int STROKE_WIDTH;
+    
+    private static int ITEM_HORIZONTAL_PADDING;
+    private static int ITEM_VERTICAL_PADDING;
 
     List<String> mColumnNames;
     List<List<String>> mDatas;
@@ -36,6 +42,9 @@ public class SqliteTableView extends ScrollView {
 
     private int currentHeight =0;
     private int currentWidth = 0;
+    
+    private List<Integer> mColWidth;
+    private int mItemHeight;
 
     private TextPaint mTextPaint;
     private Paint mPaint;
@@ -63,29 +72,43 @@ public class SqliteTableView extends ScrollView {
     private void init() {
         initPaint();
         DEFAULT_COL_WIDTH = DisplayUtils.getScrrenWidth(getContext()) / 5;
-        STROKE_WIDTH = DisplayUtils.dp2px(getContext(), 1);
+        // 默认最大宽度为一个屏幕宽
+        MAX_COL_WIDTH = DisplayUtils.getScrrenWidth(getContext());
+        STROKE_WIDTH = DisplayUtils.dp2px(getContext(), 0.5f);
+        ITEM_HORIZONTAL_PADDING = DisplayUtils.dp2px(getContext(), 10);
+        ITEM_VERTICAL_PADDING = DisplayUtils.dp2px(getContext(), 3);
+        mColWidth = new ArrayList<>();
+        mItemHeight = (int) (mTextPaint.getFontMetrics().bottom-mTextPaint.getFontMetrics().top) + 2 * ITEM_VERTICAL_PADDING + STROKE_WIDTH;
+
+        HorizontalScrollView horiziontalScrollView = new HorizontalScrollView(getContext());
+        addView(horiziontalScrollView, new ScrollView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        
         Content content = new Content(getContext());
         content.setBackgroundColor(Color.WHITE);
-        addView(content, new ScrollView.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        horiziontalScrollView.addView(content, new ScrollView.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
     }
 
     public void setColumnNames(List<String> columnNames) {
         mColumnNames = columnNames;
+        mColWidth.clear();
     }
 
     public void setDatas(List<List<String>> datas) {
         mDatas = datas;
+        mColWidth.clear();
     }
 
     private void initPaint() {
         mTextPaint = new TextPaint();
         mTextPaint.setColor(Color.BLACK);
-        mTextPaint.setTextSize(60);
+        mTextPaint.setTextSize(48);
+        mTextPaint.setAntiAlias(true);
 
         mPaint = new Paint();
         mPaint.setColor(Color.BLACK);
-        mPaint.setStrokeWidth(DisplayUtils.dp2px(getContext(), 1));
+        mPaint.setStrokeWidth(STROKE_WIDTH);
         mPaint.setStyle(Paint.Style.FILL);
+        mPaint.setAntiAlias(true);
     }
 
 
@@ -123,7 +146,19 @@ public class SqliteTableView extends ScrollView {
             if (mColumnNames == null || mColumnNames.size() == 0) {
                 return max;
             }
-            int width = mColumnNames.size() * DEFAULT_COL_WIDTH;
+            int width = 0;
+            if (mColWidth.isEmpty()) {
+                for (int i = 0; i < mColumnNames.size(); i++) {
+                    int maxWidth = measureMaxWidthOfColumn(i);
+                    mColWidth.add(maxWidth);
+                    width += maxWidth;
+                }
+            } else {
+                for (int w:
+                     mColWidth) {
+                    width += w;
+                }
+            }
             if (width < max) {
                 return max;
             } else {
@@ -135,17 +170,55 @@ public class SqliteTableView extends ScrollView {
             if (mColumnNames == null || mColumnNames.size() == 0) {
                 return max;
             }
-            float fontHeight=mTextPaint.getFontMetrics().bottom-mTextPaint.getFontMetrics().top;
             if (mDatas == null || mDatas.size() == 0) {
-                return (int) fontHeight;
+                return mItemHeight;
             }
-
-            int height = (int) (mDatas.size() * fontHeight);
+            int height = mDatas.size() * mItemHeight;
             if (height < max) {
                 return max;
             } else {
                 return height;
             }
+        }
+        
+        private int measureMaxWidthOfColumn(int column) {
+            int max = 0;
+            if (mColumnNames != null && mColumnNames.size() > column) {
+                String nameText = mColumnNames.get(column);
+                max = measureItemWidth(nameText);
+            }
+            if (mDatas == null || mDatas.size() <= column) {
+                return max;
+            }
+            for (int i = 0; i < mDatas.size(); i++) {
+                List<String> rowData = mDatas.get(i);
+                if (rowData != null && rowData.size() > column) {
+                    String value = rowData.get(column);
+                    int len = measureItemWidth(value);
+                    if (len > max) {
+                        max = len;
+                    }
+                    if (max >= MAX_COL_WIDTH) {
+                        max = MAX_COL_WIDTH;
+                        break;
+                    }
+                }
+            }
+            return max;
+        }
+        
+        private int measureItemWidth(String text) {
+            if (TextUtils.isEmpty(text)) {
+                return 0;
+            }
+            return (int) mTextPaint.measureText(text) + 2 * ITEM_HORIZONTAL_PADDING;
+        }
+
+        private int measureItemHeight(String text) {
+            if (TextUtils.isEmpty(text)) {
+                return 0;
+            }
+            return mItemHeight;
         }
 
         @Override
@@ -172,25 +245,23 @@ public class SqliteTableView extends ScrollView {
                 if (TextUtils.isEmpty(text)) {
                     continue;
                 }
-//                canvas.drawText(text, currentWidth, currentHeight, mTextPaint);
-                int width = (int) mTextPaint.measureText(text);
-                StaticLayout staticLayout = new StaticLayout(text, mTextPaint, width, Layout.Alignment.ALIGN_CENTER, 1, 0, false);
-                if (i ==0) {
-                    canvas.drawLine(currentWidth, currentHeight, currentWidth, currentHeight + staticLayout.getHeight(), mPaint);
-                }
-//                canvas.save();
-                canvas.translate(currentWidth,currentHeight);
-                staticLayout.draw(canvas);
-//                canvas.restore();
-                canvas.translate(-currentWidth, -currentHeight);
-                currentWidth += width;
-                canvas.drawLine(currentWidth, currentHeight, currentWidth, currentHeight + staticLayout.getHeight(), mPaint);
-                if (i == mColumnNames.size() - 1) {
-                    currentHeight += staticLayout.getHeight();
-                    currentWidth = getPaddingLeft();
-                    canvas.drawLine(currentWidth, currentHeight, getWidth() - getPaddingRight(), currentHeight, mPaint);
-                    currentHeight += STROKE_WIDTH;
-                }
+                drawItem(i, text, canvas, i == 0, i == mColumnNames.size() - 1);
+//                int width = mColWidth.get(i);
+//                StaticLayout staticLayout = new StaticLayout(text, mTextPaint, width, Layout.Alignment.ALIGN_CENTER, 1, 0, false);
+//                if (i ==0) {
+//                    canvas.drawLine(currentWidth, currentHeight, currentWidth, currentHeight + staticLayout.getHeight(), mPaint);
+//                }
+//                canvas.translate(currentWidth,currentHeight);
+//                staticLayout.draw(canvas);
+//                canvas.translate(-currentWidth, -currentHeight);
+//                currentWidth += width;
+//                canvas.drawLine(currentWidth, currentHeight, currentWidth, currentHeight + staticLayout.getHeight(), mPaint);
+//                if (i == mColumnNames.size() - 1) {
+//                    currentHeight += staticLayout.getHeight();
+//                    currentWidth = getPaddingLeft();
+//                    canvas.drawLine(currentWidth, currentHeight, getWidth() - getPaddingRight(), currentHeight, mPaint);
+//                    currentHeight += STROKE_WIDTH;
+//                }
             }
 
         }
@@ -207,31 +278,29 @@ public class SqliteTableView extends ScrollView {
                         if (TextUtils.isEmpty(text)) {
                             continue;
                         }
-                        drawItem(text, canvas, j == 0, j == rowData.size() - 1);
+                        drawItem(j, text, canvas, j == 0, j == rowData.size() - 1);
                     }
                 }
 
             }
         }
 
-        private void drawItem(String text, Canvas canvas, boolean isFirst, boolean isLast) {
-            int width = (int) mTextPaint.measureText(text);
+        private void drawItem(int columnIndex, String text, Canvas canvas, boolean isFirst, boolean isLast) {
+            int width = mColWidth.get(columnIndex);
             StaticLayout staticLayout = new StaticLayout(text, mTextPaint, width, Layout.Alignment.ALIGN_CENTER, 1, 0, false);
             if (isFirst) {
-                canvas.drawLine(currentWidth, currentHeight, currentWidth, currentHeight + staticLayout.getHeight(), mPaint);
+                canvas.drawLine(currentWidth, currentHeight, currentWidth, currentHeight + mItemHeight, mPaint);
             }
-//            canvas.save();
-            canvas.translate(currentWidth, currentHeight);
+            canvas.translate(currentWidth, currentHeight + ITEM_VERTICAL_PADDING);
             staticLayout.draw(canvas);
-//            canvas.restore();
-            canvas.translate(-currentWidth, -currentHeight);
+            canvas.translate(-currentWidth, -currentHeight - ITEM_VERTICAL_PADDING);
             currentWidth += width;
-            canvas.drawLine(currentWidth, currentHeight, currentWidth, currentHeight + staticLayout.getHeight(), mPaint);
+            canvas.drawLine(currentWidth, currentHeight, currentWidth, currentHeight + mItemHeight, mPaint);
             if (isLast) {
-                currentHeight += staticLayout.getHeight();
+                currentHeight += mItemHeight;
                 currentWidth = getPaddingLeft();
                 canvas.drawLine(currentWidth, currentHeight, getWidth() - getPaddingRight(), currentHeight, mPaint);
-                currentHeight += STROKE_WIDTH;
+//                currentHeight += STROKE_WIDTH;
             }
         }
 

@@ -59,11 +59,11 @@ public class SQLiteTableFragment extends Fragment {
 //        return textView;
 
         SqliteTableView sqliteTableView = new SqliteTableView(getContext());
-        sqliteTableView.setBackgroundColor(Color.BLACK);
+        sqliteTableView.setBackgroundColor(Color.WHITE);
         sqliteTableView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         mSQLiteWrapper.open();
         sqliteTableView.setColumnNames(mSQLiteWrapper.getColumNames(mTableName));
-        sqliteTableView.setDatas(mSQLiteWrapper.getDataLimited(mTableName, 10));
+        sqliteTableView.setDatas(mSQLiteWrapper.getDataLimited(mTableName, 100));
         return sqliteTableView;
 
 //        return super.onCreateView(inflater, container, savedInstanceState);
