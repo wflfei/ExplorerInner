@@ -14,6 +14,8 @@ import android.widget.TextView;
 import com.wfl.explorer.filehelper.sqlite.SQLiteWrapper;
 import com.wfl.explorer.viewer.SqliteTableView;
 
+import java.util.List;
+
 /**
  * Created by sn on 2017/5/25.
  */
@@ -21,6 +23,14 @@ import com.wfl.explorer.viewer.SqliteTableView;
 public class SQLiteTableFragment extends Fragment {
     private String mTableName;
     private SQLiteWrapper mSQLiteWrapper;
+    
+    // Data
+    List<String> mColNames;
+    List<List<String>> mData;
+    
+    
+    // View
+    SqliteTableView mSqliteTableView;
 
 
     public static SQLiteTableFragment createInstance(String path) {
@@ -54,18 +64,19 @@ public class SQLiteTableFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-//        TextView textView = new TextView(getActivity());
-//        textView.setText(mTableName);
-//        return textView;
 
-        SqliteTableView sqliteTableView = new SqliteTableView(getContext());
-        sqliteTableView.setBackgroundColor(Color.WHITE);
-        sqliteTableView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        mSqliteTableView = new SqliteTableView(getContext());
+        mSqliteTableView.setBackgroundColor(Color.WHITE);
+        mSqliteTableView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         mSQLiteWrapper.open();
-        sqliteTableView.setColumnNames(mSQLiteWrapper.getColumNames(mTableName));
-        sqliteTableView.setDatas(mSQLiteWrapper.getDataLimited(mTableName, 100));
-        return sqliteTableView;
+        mColNames = mSQLiteWrapper.getColumNames(mTableName);
+        mSqliteTableView.setColumnNames(mColNames);
+        mData = mSQLiteWrapper.getDataLimited(mTableName, 100);
+        mSqliteTableView.setDatas(mData);
+        return mSqliteTableView;
 
 //        return super.onCreateView(inflater, container, savedInstanceState);
     }
+    
+    
 }

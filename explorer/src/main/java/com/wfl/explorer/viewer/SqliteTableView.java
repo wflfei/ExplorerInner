@@ -5,16 +5,24 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.os.Build;
+import android.support.v4.view.GestureDetectorCompat;
+import android.support.v4.view.MotionEventCompat;
+import android.support.v4.view.ViewCompat;
+import android.text.BoringLayout;
 import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
 import android.widget.ScrollView;
+import android.widget.Toast;
 
 import com.wfl.explorer.framework.common.utils.DisplayUtils;
 import com.wfl.explorer.framework.common.utils.LogUtils;
@@ -171,9 +179,9 @@ public class SqliteTableView extends ScrollView {
                 return max;
             }
             if (mDatas == null || mDatas.size() == 0) {
-                return mItemHeight;
+                return mItemHeight + STROKE_WIDTH;
             }
-            int height = mDatas.size() * mItemHeight;
+            int height = mDatas.size() * mItemHeight + STROKE_WIDTH;
             if (height < max) {
                 return max;
             } else {
@@ -187,7 +195,7 @@ public class SqliteTableView extends ScrollView {
                 String nameText = mColumnNames.get(column);
                 max = measureItemWidth(nameText);
             }
-            if (mDatas == null || mDatas.size() <= column) {
+            if (mDatas == null) {
                 return max;
             }
             for (int i = 0; i < mDatas.size(); i++) {
@@ -245,23 +253,7 @@ public class SqliteTableView extends ScrollView {
                 if (TextUtils.isEmpty(text)) {
                     continue;
                 }
-                drawItem(i, text, canvas, i == 0, i == mColumnNames.size() - 1);
-//                int width = mColWidth.get(i);
-//                StaticLayout staticLayout = new StaticLayout(text, mTextPaint, width, Layout.Alignment.ALIGN_CENTER, 1, 0, false);
-//                if (i ==0) {
-//                    canvas.drawLine(currentWidth, currentHeight, currentWidth, currentHeight + staticLayout.getHeight(), mPaint);
-//                }
-//                canvas.translate(currentWidth,currentHeight);
-//                staticLayout.draw(canvas);
-//                canvas.translate(-currentWidth, -currentHeight);
-//                currentWidth += width;
-//                canvas.drawLine(currentWidth, currentHeight, currentWidth, currentHeight + staticLayout.getHeight(), mPaint);
-//                if (i == mColumnNames.size() - 1) {
-//                    currentHeight += staticLayout.getHeight();
-//                    currentWidth = getPaddingLeft();
-//                    canvas.drawLine(currentWidth, currentHeight, getWidth() - getPaddingRight(), currentHeight, mPaint);
-//                    currentHeight += STROKE_WIDTH;
-//                }
+                drawItem(-1, i, text, canvas, i == 0, i == mColumnNames.size() - 1);
             }
 
         }
@@ -275,25 +267,37 @@ public class SqliteTableView extends ScrollView {
                 if (rowData != null && rowData.size() > 0) {
                     for (int j = 0; j < rowData.size(); j++) {
                         String text = rowData.get(j);
-                        if (TextUtils.isEmpty(text)) {
-                            continue;
-                        }
-                        drawItem(j, text, canvas, j == 0, j == rowData.size() - 1);
+//                        if (TextUtils.isEmpty(text)) {
+//                            continue;
+//                        }
+                        drawItem(i, j, text, canvas, j == 0, j == rowData.size() - 1);
                     }
                 }
 
             }
         }
 
-        private void drawItem(int columnIndex, String text, Canvas canvas, boolean isFirst, boolean isLast) {
+        private void drawItem(int rowIndex, int columnIndex, String text, Canvas canvas, boolean isFirst, boolean isLast) {
             int width = mColWidth.get(columnIndex);
             StaticLayout staticLayout = new StaticLayout(text, mTextPaint, width, Layout.Alignment.ALIGN_CENTER, 1, 0, false);
+            int lineCount = staticLayout.getLineCount();
+            if (lineCount > 1) {
+                text = text.substring(0, staticLayout.getLineEnd(0) - 3) + "...";
+                staticLayout = new StaticLayout(text, mTextPaint, width, Layout.Alignment.ALIGN_CENTER, 1, 0, false);
+            }
             if (isFirst) {
                 canvas.drawLine(currentWidth, currentHeight, currentWidth, currentHeight + mItemHeight, mPaint);
             }
             canvas.translate(currentWidth, currentHeight + ITEM_VERTICAL_PADDING);
             staticLayout.draw(canvas);
             canvas.translate(-currentWidth, -currentHeight - ITEM_VERTICAL_PADDING);
+            if (mTouching != null && rowIndex >= 0) {
+                if (mTouching.y > currentHeight && mTouching.y < currentHeight + mItemHeight && mTouching.x > currentWidth && mTouching.x < currentWidth + width) {
+                    mPaint.setColor(Color.argb(35, 55, 55, 55));
+                    canvas.drawRect(currentWidth, currentHeight, currentWidth + width, currentHeight + mItemHeight, mPaint);
+                    mPaint.setColor(Color.BLACK);
+                }
+            }
             currentWidth += width;
             canvas.drawLine(currentWidth, currentHeight, currentWidth, currentHeight + mItemHeight, mPaint);
             if (isLast) {
@@ -304,5 +308,51 @@ public class SqliteTableView extends ScrollView {
             }
         }
 
+
+        GestureDetectorCompat mGestureDetectorCompat = new GestureDetectorCompat(getContext(), new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public void onLongPress(MotionEvent e) {
+                int x = (int) e.getX();
+                int y = (int) e.getY();
+//                Toast.makeText(getContext(), "long", Toast.LENGTH_SHORT).show();
+            }
+            
+            @Override
+            public boolean onSingleTapUp(MotionEvent e) {
+                
+                return super.onSingleTapUp(e);
+            }
+        });
+        
+        private Point mTouching = null;
+        @Override
+        public boolean onTouchEvent(MotionEvent event) {
+            int action = MotionEventCompat.getActionMasked(event);
+            if (action == MotionEvent.ACTION_DOWN) {
+                int x = (int) event.getX();
+                int y = (int) event.getY();
+                mTouching = new Point(x, y);
+                removeCallbacks(mPress);
+                postDelayed(mPress, 50);
+            } else if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
+                mTouching = null;
+                removeCallbacks(mPress);
+                postDelayed(mPress, 50);
+            }
+            mGestureDetectorCompat.onTouchEvent(event);
+            return true;
+        }
+        
+        Runnable mPress = new Runnable() {
+            @Override
+            public void run() {
+                invalidate();
+            }
+        };
     }
+    
+    public interface onTableActionsListener {
+        void onEditAction(int index, List<String> rowData);
+        void onDeleteAction();
+    } 
 }
