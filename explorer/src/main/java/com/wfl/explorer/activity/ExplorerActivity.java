@@ -1,5 +1,6 @@
 package com.wfl.explorer.activity;
 
+import android.os.Environment;
 import android.os.PersistableBundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -9,12 +10,17 @@ import android.os.Bundle;
 import com.wfl.explorer.R;
 import com.wfl.explorer.adapter.MainPageAdapter;
 import com.wfl.explorer.base.BaseActivity;
+import com.wfl.explorer.filehelper.sqlite.SQLiteWrapper;
+import com.wfl.explorer.filehelper.sqlite.SQLiteWrapperImpl;
+import com.wfl.explorer.filehelper.sqlite.TableInfo;
 import com.wfl.explorer.filetree.FileTree;
 import com.wfl.explorer.fragment.FragmentBackHandler;
 import com.wfl.explorer.fragment.TabHelper;
 import com.wfl.explorer.fragment.TabManager;
+import com.wfl.explorer.framework.common.utils.LogUtils;
 import com.wfl.explorer.model.PageInfo;
 
+import java.io.File;
 import java.util.List;
 
 public class ExplorerActivity extends BaseActivity implements TabHelper {
@@ -29,6 +35,12 @@ public class ExplorerActivity extends BaseActivity implements TabHelper {
         setContentView(R.layout.activity_explorer);
         initPages();
         initViews();
+
+        String path = Environment.getExternalStorageDirectory() + File.separator + "Movies/contacts.db";
+        SQLiteWrapper sqLiteWrapper = new SQLiteWrapperImpl(path);
+        sqLiteWrapper.open(0);
+        TableInfo info = sqLiteWrapper.getTableInfo("Contacts");
+        LogUtils.v("tag", "sd");
     }
     
     private void initViews() {

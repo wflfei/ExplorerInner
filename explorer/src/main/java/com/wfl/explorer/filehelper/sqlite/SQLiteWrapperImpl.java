@@ -1,5 +1,6 @@
 package com.wfl.explorer.filehelper.sqlite;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
@@ -105,6 +106,40 @@ public class SQLiteWrapperImpl implements SQLiteWrapper {
     }
 
     @Override
+    public TableInfo getTableInfo(String tableName) {
+        Cursor cursor = querySQL(String.format("PRAGMA table_info(%s)", tableName));
+        List<TableInfo.Column> columns = new ArrayList<>();
+        TableInfo tableInfo = new TableInfo();
+        if (cursor != null) {
+            int count = 0;
+            tableInfo.primaryKeys = new ArrayList<>();
+            while (cursor.moveToNext()) {
+//                int colCount = cursor.getColumnCount();
+//                String value = "";
+//                for (int i = 0; i < colCount; i++) {
+//                    value += cursor.getColumnNames()[i];
+//                    value += "...";
+//                }
+                
+                TableInfo.Column column = new TableInfo.Column();
+                column.name = cursor.getString(cursor.getColumnIndex("name"));
+                column.cid = cursor.getInt(cursor.getColumnIndex("cid"));
+                column.type = cursor.getString(cursor.getColumnIndex("type"));
+                column.notnull = cursor.getInt(cursor.getColumnIndex("notnull")) == 1;
+                column.pk = cursor.getInt(cursor.getColumnIndex("pk")) == 1;
+                column.dflt_value = cursor.getString(cursor.getColumnIndex("dflt_value"));
+                columns.add(column);
+                if (column.pk) {
+                    tableInfo.primaryKeys.add(column);
+                }
+                count++;
+            }
+        }
+        tableInfo.columns = columns;
+        return tableInfo;
+    }
+
+    @Override
     public Cursor getQueryCursor(String tableName) {
         return null;
     }
@@ -148,8 +183,39 @@ public class SQLiteWrapperImpl implements SQLiteWrapper {
         }
         return result;
     }
-    
-    
+
+
+//    @Override
+//    public List<Map<String, String>> getDataLimited(String tableName, int limited) {
+//        return null;
+//    }
+
+    @Override
+    public int updateRowDataOfTable(String tableName, TableInfo tableInfo, List<String> rowData) {
+        ContentValues cv = new ContentValues();
+        if (tableInfo == null) {
+            tableInfo = getTableInfo(tableName);
+        }
+        if (tableInfo == null || tableInfo.columns == null || tableInfo.columns.size() == 0) {
+            return -1;
+        }
+        for (int i=0; i<tableInfo.columns.size(); i++) {
+            cv.put(tableInfo.columns.get(i).name, rowData.get(tableInfo.columns.get(i).cid));
+        }
+        return update(tableName, cv, primaryKeyWhereClause(tableInfo), primaryKeyWhereArgs(tableInfo, rowData));
+    }
+
+    @Override
+    public int deleteRowDataOfTable(String tableName, TableInfo tableInfo, List<String> rowData) {
+        if (tableInfo == null) {
+            tableInfo = getTableInfo(tableName);
+        }
+        if (tableInfo == null || tableInfo.columns == null || tableInfo.columns.size() == 0) {
+            return -1;
+        }
+        return delete(tableName, primaryKeyWhereClause(tableInfo), primaryKeyWhereArgs(tableInfo, rowData));
+    }
+
     public void execSQL(String sql) {
         if (!isValid()) {
             return;
@@ -163,6 +229,21 @@ public class SQLiteWrapperImpl implements SQLiteWrapper {
         }
         return mDatabase.rawQuery(sql, null);
     }
+    
+    private int update(String tableName, ContentValues cv, String whereClause, String[] whereArgs) {
+        if (!isValid()) {
+            return -1;
+        }
+        return mDatabase.update(tableName,cv, whereClause, whereArgs);
+    }
+    
+    private int delete(String tableName, String whereClause, String[] whereArgs) {
+        if (!isValid()) {
+            return -1;
+        }
+        return mDatabase.delete(tableName, whereClause, whereArgs);
+    }
+    
     
     private String getAndConvertData(@NonNull Cursor cursor, int index) {
         if (index < 0 || index >= cursor.getColumnCount()) {
@@ -191,5 +272,42 @@ public class SQLiteWrapperImpl implements SQLiteWrapper {
                 break;
         }
         return result;
+    }
+    
+    
+    
+    
+    private String primaryKeyWhereClause(TableInfo tableInfo) {
+        if (tableInfo == null) {
+            return null;
+        }
+        StringBuilder where = new StringBuilder();
+        for (int i=0; i<tableInfo.columns.size(); i++) {
+            if (tableInfo.columns.get(i).pk) {
+                if (where.length() > 0) {
+                    where.append(" AND ");
+                }
+                where.append(tableInfo.columns.get(i).name);
+                where.append(" = ?");
+            }
+        }
+        return where.toString();
+    }
+
+    private String[] primaryKeyWhereArgs(TableInfo tableInfo, List<String> rowData) {
+        if (tableInfo == null || rowData == null) {
+            return null;
+        }
+        List<String> pks = new ArrayList<>();
+        for (int i=0; i<tableInfo.columns.size(); i++) {
+            if (tableInfo.columns.get(i).pk) {
+                if (rowData.size() <= tableInfo.columns.get(i).cid) {
+                    pks.add("");
+                } else {
+                    pks.add(rowData.get(tableInfo.columns.get(i).cid));
+                }
+            }
+        }
+        return pks.toArray(new String[] {});
     }
 }

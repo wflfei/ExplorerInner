@@ -73,10 +73,22 @@ public class SQLiteTableFragment extends Fragment {
         mSqliteTableView.setColumnNames(mColNames);
         mData = mSQLiteWrapper.getDataLimited(mTableName, 100);
         mSqliteTableView.setDatas(mData);
+        mSqliteTableView.setOnTableActionsListener(mOnTableActionsListener);
         return mSqliteTableView;
 
 //        return super.onCreateView(inflater, container, savedInstanceState);
     }
     
+    SqliteTableView.OnTableActionsListener mOnTableActionsListener = new SqliteTableView.OnTableActionsListener() {
+        @Override
+        public void onLongPress(int index, List<String> rowData) {
+            
+        }
+
+        @Override
+        public void onClick(int index, List<String> rowData) {
+
+        }
+    };
     
 }

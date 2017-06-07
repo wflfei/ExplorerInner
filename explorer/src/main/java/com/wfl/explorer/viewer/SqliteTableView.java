@@ -16,6 +16,7 @@ import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.SparseArray;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -44,10 +45,9 @@ public class SqliteTableView extends ScrollView {
 
     List<String> mColumnNames;
     List<List<String>> mDatas;
-
-    private int column = 0;
-    private int num = 0;
-
+    
+    private SparseArray<Integer> positions;
+    
     private int currentHeight =0;
     private int currentWidth = 0;
     
@@ -288,6 +288,9 @@ public class SqliteTableView extends ScrollView {
             if (isFirst) {
                 canvas.drawLine(currentWidth, currentHeight, currentWidth, currentHeight + mItemHeight, mPaint);
             }
+            if (rowIndex >= 0) {
+                positions.put(rowIndex, currentHeight);
+            }
             canvas.translate(currentWidth, currentHeight + ITEM_VERTICAL_PADDING);
             staticLayout.draw(canvas);
             canvas.translate(-currentWidth, -currentHeight - ITEM_VERTICAL_PADDING);
@@ -314,12 +317,21 @@ public class SqliteTableView extends ScrollView {
             public void onLongPress(MotionEvent e) {
                 int x = (int) e.getX();
                 int y = (int) e.getY();
-//                Toast.makeText(getContext(), "long", Toast.LENGTH_SHORT).show();
+                if (mOnTableActionsListener != null) {
+                    int index = getTouchedIndex(y);
+                    mOnTableActionsListener.onLongPress(index, mDatas.get(index));
+                }
+                
             }
             
             @Override
             public boolean onSingleTapUp(MotionEvent e) {
-                
+                int x = (int) e.getX();
+                int y = (int) e.getY();
+                if (mOnTableActionsListener != null) {
+                    int index = getTouchedIndex(y);
+                    mOnTableActionsListener.onClick(index, mDatas.get(index));
+                }
                 return super.onSingleTapUp(e);
             }
         });
@@ -349,10 +361,37 @@ public class SqliteTableView extends ScrollView {
                 invalidate();
             }
         };
+        
+        private int getTouchedIndex(int y) {
+            for (int i=0; i<mDatas.size(); i++) {
+                int cur = positions.get(i);
+                if (y >= cur) {
+                    if (i < mDatas.size() - 1) {
+                        int next = positions.get(i + 1);
+                        if (y < next) {
+                            return i;
+                        }
+                    } else {
+                        return i;
+                    }
+                }
+            }
+            return 0;
+        }
     }
     
-    public interface onTableActionsListener {
-        void onEditAction(int index, List<String> rowData);
-        void onDeleteAction();
-    } 
+    
+    
+    // Actions
+    
+    public interface OnTableActionsListener {
+        void onLongPress(int index, List<String> rowData);
+        void onClick(int index, List<String> rowData);
+    }
+    
+    public OnTableActionsListener mOnTableActionsListener;
+
+    public void setOnTableActionsListener(OnTableActionsListener onTableActionsListener) {
+        mOnTableActionsListener = onTableActionsListener;
+    }
 }

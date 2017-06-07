@@ -21,6 +21,8 @@ public interface SQLiteWrapper {
     List<String> getTables();
     
     Map<String, String> getTableStructure(String tableName);
+
+    TableInfo getTableInfo(String tableName);
     
     Cursor getQueryCursor(String tableName);
     Map<String, String> nextRowData(Cursor cursor);
@@ -29,4 +31,10 @@ public interface SQLiteWrapper {
 
     List<String> getColumNames(String tableName);
     List<List<String>> getDataLimited(String tableName, int limited);
+    
+//    List<Map<String, String>> getDataLimited(String tableName, int limited);
+    
+    int updateRowDataOfTable(String tableName, TableInfo tableInfo, List<String> rowData);
+    
+    int deleteRowDataOfTable(String tableName, TableInfo tableInfo, List<String> rowData);
 }
