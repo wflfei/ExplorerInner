@@ -46,7 +46,7 @@ public class SqliteTableView extends ScrollView {
     List<String> mColumnNames;
     List<List<String>> mDatas;
     
-    private SparseArray<Integer> positions;
+    private SparseArray<Integer> positions = new SparseArray<>();
     
     private int currentHeight =0;
     private int currentWidth = 0;
@@ -240,6 +240,7 @@ public class SqliteTableView extends ScrollView {
         private void resetDrawing() {
             currentHeight = getPaddingTop();
             currentWidth = getPaddingLeft();
+            positions.clear();
         }
 
         private void drawNames(Canvas canvas) {

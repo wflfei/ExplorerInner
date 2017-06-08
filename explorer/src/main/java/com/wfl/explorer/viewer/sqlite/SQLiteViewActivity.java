@@ -27,7 +27,7 @@ import java.util.List;
  * Created by sn on 2017/5/24.
  */
 
-public class SQLiteViewActivity extends BaseActivity {
+public class SQLiteViewActivity extends BaseActivity implements TableEditDialogFragment.OnEditResultListener {
     public static final String KEY_PATH = "database_path";
     private String mPath;
     private ListView mListView;
@@ -132,5 +132,12 @@ public class SQLiteViewActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+    }
+
+    @Override
+    public void onEditConfirum(int index, List<String> rowData) {
+        if (mTableFragment != null && mTableFragment.isVisible()) {
+            mTableFragment.onEditConfirm(index, rowData);
+        }
     }
 }

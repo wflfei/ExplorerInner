@@ -200,7 +200,12 @@ public class SQLiteWrapperImpl implements SQLiteWrapper {
             return -1;
         }
         for (int i=0; i<tableInfo.columns.size(); i++) {
-            cv.put(tableInfo.columns.get(i).name, rowData.get(tableInfo.columns.get(i).cid));
+            TableInfo.Column column = tableInfo.columns.get(i);
+            // 主键或者二进制文件不可更改
+            if (column.pk || "Blob Data".equals(rowData.get(column.cid)) || "NULL".equals(rowData.get(column.cid))) {
+                continue;
+            }
+            cv.put(column.name, rowData.get(column.cid));
         }
         return update(tableName, cv, primaryKeyWhereClause(tableInfo), primaryKeyWhereArgs(tableInfo, rowData));
     }

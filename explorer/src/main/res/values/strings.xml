@@ -1,3 +1,12 @@
 <resources>
     <string name="external_storage_name">扩展存储(sdcard)</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+
+
+    <!--common-->
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
 </resources>

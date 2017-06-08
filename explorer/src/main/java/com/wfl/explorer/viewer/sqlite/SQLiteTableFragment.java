@@ -6,14 +6,17 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatDialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.wfl.explorer.filehelper.sqlite.SQLiteWrapper;
+import com.wfl.explorer.filehelper.sqlite.TableInfo;
 import com.wfl.explorer.viewer.SqliteTableView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,6 +30,7 @@ public class SQLiteTableFragment extends Fragment {
     // Data
     List<String> mColNames;
     List<List<String>> mData;
+    TableInfo mTableInfo;
     
     
     // View
@@ -44,15 +48,15 @@ public class SQLiteTableFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        Activity activity = getActivity();
-        if (activity instanceof SQLiteViewActivity) {
-            mSQLiteWrapper = ((SQLiteViewActivity) activity).getSQLiteWrapper();
-        }
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Activity activity = getActivity();
+        if (activity instanceof SQLiteViewActivity) {
+            mSQLiteWrapper = ((SQLiteViewActivity) activity).getSQLiteWrapper();
+        }
         mTableName = getArguments().getString("path");
     }
 
@@ -69,20 +73,35 @@ public class SQLiteTableFragment extends Fragment {
         mSqliteTableView.setBackgroundColor(Color.WHITE);
         mSqliteTableView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         mSQLiteWrapper.open();
+        mTableInfo = mSQLiteWrapper.getTableInfo(mTableName);
         mColNames = mSQLiteWrapper.getColumNames(mTableName);
         mSqliteTableView.setColumnNames(mColNames);
         mData = mSQLiteWrapper.getDataLimited(mTableName, 100);
+        mSQLiteWrapper.close();
         mSqliteTableView.setDatas(mData);
         mSqliteTableView.setOnTableActionsListener(mOnTableActionsListener);
         return mSqliteTableView;
 
 //        return super.onCreateView(inflater, container, savedInstanceState);
     }
+
+    public void onEditConfirm(int index, List<String> rowData) {
+        if (mSQLiteWrapper != null) {
+            mSQLiteWrapper.open();
+            mSQLiteWrapper.updateRowDataOfTable(mTableName, mTableInfo, rowData);
+            mData = mSQLiteWrapper.getDataLimited(mTableName, 100);
+            mSQLiteWrapper.close();
+            mSqliteTableView.setDatas(mData);
+            mSqliteTableView.postInvalidate();
+        }
+    }
     
     SqliteTableView.OnTableActionsListener mOnTableActionsListener = new SqliteTableView.OnTableActionsListener() {
         @Override
         public void onLongPress(int index, List<String> rowData) {
-            
+
+            TableEditDialogFragment dialogFragment = TableEditDialogFragment.newInstance(mTableInfo, index, (ArrayList<String>) rowData);
+            dialogFragment.show(getChildFragmentManager(), "dialog_edit");
         }
 
         @Override
@@ -90,5 +109,5 @@ public class SQLiteTableFragment extends Fragment {
 
         }
     };
-    
+
 }
