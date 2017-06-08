@@ -98,12 +98,10 @@ public class SqliteTableView extends ScrollView {
 
     public void setColumnNames(List<String> columnNames) {
         mColumnNames = columnNames;
-        mColWidth.clear();
     }
 
     public void setDatas(List<List<String>> datas) {
         mDatas = datas;
-        mColWidth.clear();
     }
 
     private void initPaint() {

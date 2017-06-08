@@ -90,6 +90,7 @@ public class TableEditDialogFragment extends AppCompatDialogFragment {
         if (mListener != null) {
             mListener.onEditConfirum(mIndex, mRowData);
         }
+        dismiss();
     }
     public void onCancelClick() {
         dismiss();
