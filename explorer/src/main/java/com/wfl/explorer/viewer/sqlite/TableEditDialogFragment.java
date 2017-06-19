@@ -2,8 +2,12 @@ package com.wfl.explorer.viewer.sqlite;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.TextInputEditText;
+import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatDialogFragment;
 import android.text.Editable;
@@ -11,6 +15,7 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -66,6 +71,7 @@ public class TableEditDialogFragment extends AppCompatDialogFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+        getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         View v = inflater.inflate(R.layout.fragment_table_edit_dialog, container, false);
         LinearLayout content = (LinearLayout) v.findViewById(R.id.sqlite_edit_content);
         Button cofirmBtn = (Button) v.findViewById(R.id.sqlite_edit_confirm_btn);
@@ -117,20 +123,14 @@ public class TableEditDialogFragment extends AppCompatDialogFragment {
         if (mTableInfo == null || mRowData == null || mRowData.size() == 0) {
             return;
         }
-//        ScrollView scrollView = new ScrollView(getContext());
-//
-//        LinearLayout content = new LinearLayout(getContext());
-//        content.setOrientation(LinearLayout.VERTICAL);
-//
-//        scrollView.addView(content, new ScrollView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-
         mEditViews.clear();
         for (int i = 0; i < mRowData.size(); i++) {
             TableInfo.Column col = mTableInfo.getColumnByCid(i);
             boolean editable = (col != null) && !col.pk && !"Blob Data".equals(mRowData.get(i))&& !"Null".equals(mRowData.get(i));
-            final EditText textView = createEditItem(mRowData.get(i), editable);
-            textView.setTag(i);
-            textView.addTextChangedListener(new TextWatcher() {
+            final TextInputLayout textInputLayout = createEditItem(mRowData.get(i), editable);
+            textInputLayout.setTag(i);
+            textInputLayout.setHint(col.name);
+            textInputLayout.getEditText().addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -143,21 +143,24 @@ public class TableEditDialogFragment extends AppCompatDialogFragment {
 
                 @Override
                 public void afterTextChanged(Editable s) {
-                    int cid = (int) textView.getTag();
+                    int cid = (int) textInputLayout.getTag();
                     mRowData.remove(cid);
                     mRowData.add(cid, s.toString().trim());
                 }
             });
-            mEditViews.add(textView);
-            content.addView(textView);
+//            mEditViews.add(textView);
+            content.addView(textInputLayout);
         }
     }
 
-    private EditText createEditItem(String text, boolean editable) {
-        EditText textView = new EditText(getContext());
+    private TextInputLayout createEditItem(String text, boolean editable) {
+        TextInputEditText textView = new TextInputEditText(getContext());
         textView.setText(text);
         textView.setEnabled(editable);
-        return textView;
+        TextInputLayout textInputLayout = new TextInputLayout(getContext());
+        textInputLayout.addView(textView);
+        
+        return textInputLayout;
     }
 
 

@@ -31,6 +31,7 @@ public class SQLiteViewActivity extends BaseActivity implements TableEditDialogF
     public static final String KEY_PATH = "database_path";
     private String mPath;
     private ListView mListView;
+    private ArrayAdapter mArrayAdapter;
     private List<String> mTables;
     private SQLiteWrapper mSQLiteWrapper;
     private SQLiteTableFragment mTableFragment;
@@ -90,7 +91,13 @@ public class SQLiteViewActivity extends BaseActivity implements TableEditDialogF
         if (mTableFragment != null && mTableFragment.isAdded()) {
             mFragmentManager.beginTransaction().remove(mTableFragment).commit();
         }
-        mListView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, mTables));
+        mArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, mTables);
+        mListView.setAdapter(mArrayAdapter);
+    }
+    
+    private void refreshTables() {
+        mArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, mTables);
+        mListView.setAdapter(mArrayAdapter);
     }
 
     private void showTable(String tableName) {
@@ -117,7 +124,11 @@ public class SQLiteViewActivity extends BaseActivity implements TableEditDialogF
         mSQLiteWrapper.open();
         mTables = mSQLiteWrapper.getTables();
         mSQLiteWrapper.close();
-        showTables();
+        if (mArrayAdapter == null) {
+            showTables();
+        } else {
+            refreshTables();
+        }
         setTitle(FileHelper.getFileName(mPath));
     }
 
