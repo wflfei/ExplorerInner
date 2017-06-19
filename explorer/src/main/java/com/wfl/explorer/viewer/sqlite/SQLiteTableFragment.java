@@ -92,7 +92,7 @@ public class SQLiteTableFragment extends Fragment {
             mData = mSQLiteWrapper.getDataLimited(mTableName, 100);
             mSQLiteWrapper.close();
             mSqliteTableView.setDatas(mData);
-            mSqliteTableView.postInvalidate();
+            mSqliteTableView.requestLayout();
         }
     }
     

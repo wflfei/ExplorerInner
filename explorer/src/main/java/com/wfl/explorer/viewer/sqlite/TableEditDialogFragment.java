@@ -2,6 +2,7 @@ package com.wfl.explorer.viewer.sqlite;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
@@ -16,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -148,6 +150,7 @@ public class TableEditDialogFragment extends AppCompatDialogFragment {
                     mRowData.add(cid, s.toString().trim());
                 }
             });
+            textInputLayout.getEditText().setInputType(getInputTypeByColumn(col));
 //            mEditViews.add(textView);
             content.addView(textInputLayout);
         }
@@ -161,6 +164,20 @@ public class TableEditDialogFragment extends AppCompatDialogFragment {
         textInputLayout.addView(textView);
         
         return textInputLayout;
+    }
+
+    private int getInputTypeByColumn(TableInfo.Column column) {
+        if (column == null) {
+            return EditorInfo.TYPE_NULL;
+        }
+        if (column.typeInt == Cursor.FIELD_TYPE_INTEGER) {
+            return EditorInfo.TYPE_CLASS_NUMBER | EditorInfo.TYPE_NUMBER_FLAG_SIGNED;
+        } else if (column.typeInt == Cursor.FIELD_TYPE_STRING) {
+            return EditorInfo.TYPE_CLASS_TEXT;
+        } else if (column.typeInt == Cursor.FIELD_TYPE_FLOAT) {
+            return  EditorInfo.TYPE_CLASS_NUMBER | EditorInfo.TYPE_NUMBER_FLAG_DECIMAL;
+        }
+        return EditorInfo.TYPE_NULL;
     }
 
 

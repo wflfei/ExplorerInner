@@ -281,7 +281,10 @@ public class SqliteTableView extends ScrollView {
             StaticLayout staticLayout = new StaticLayout(text, mTextPaint, width, Layout.Alignment.ALIGN_CENTER, 1, 0, false);
             int lineCount = staticLayout.getLineCount();
             if (lineCount > 1) {
-                text = text.substring(0, staticLayout.getLineEnd(0) - 3) + "...";
+                int firstLineEnd = staticLayout.getLineEnd(0);
+                if (firstLineEnd > 10) {
+                    text = text.substring(0, firstLineEnd - 3) + "...";
+                }
                 staticLayout = new StaticLayout(text, mTextPaint, width, Layout.Alignment.ALIGN_CENTER, 1, 0, false);
             }
             if (isFirst) {
@@ -318,7 +321,9 @@ public class SqliteTableView extends ScrollView {
                 int y = (int) e.getY();
                 if (mOnTableActionsListener != null) {
                     int index = getTouchedIndex(y);
-                    mOnTableActionsListener.onLongPress(index, mDatas.get(index));
+                    if (index >= 0 && index < mDatas.size()) {
+                        mOnTableActionsListener.onLongPress(index, mDatas.get(index));
+                    }
                 }
                 
             }
@@ -329,7 +334,9 @@ public class SqliteTableView extends ScrollView {
                 int y = (int) e.getY();
                 if (mOnTableActionsListener != null) {
                     int index = getTouchedIndex(y);
-                    mOnTableActionsListener.onClick(index, mDatas.get(index));
+                    if (index >= 0 && index < mDatas.size()) {
+                        mOnTableActionsListener.onClick(index, mDatas.get(index));
+                    }
                 }
                 return super.onSingleTapUp(e);
             }
@@ -360,7 +367,12 @@ public class SqliteTableView extends ScrollView {
                 invalidate();
             }
         };
-        
+
+        /**
+         * get the index of the touch event.
+         * @param y
+         * @return return -1 if touch the column name
+         */
         private int getTouchedIndex(int y) {
             for (int i=0; i<mDatas.size(); i++) {
                 int cur = positions.get(i);
@@ -375,7 +387,7 @@ public class SqliteTableView extends ScrollView {
                     }
                 }
             }
-            return 0;
+            return -1;
         }
     }
     

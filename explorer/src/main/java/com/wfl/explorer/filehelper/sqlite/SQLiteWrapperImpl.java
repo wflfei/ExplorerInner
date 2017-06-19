@@ -101,6 +101,7 @@ public class SQLiteWrapperImpl implements SQLiteWrapper {
                 result.put(cursor.getString(cursor.getColumnIndex("name")), cursor.getString(cursor.getColumnIndex("type")));
                 count++;
             }
+            cursor.close();
         }
         return result;
     }
@@ -108,6 +109,7 @@ public class SQLiteWrapperImpl implements SQLiteWrapper {
     @Override
     public TableInfo getTableInfo(String tableName) {
         Cursor cursor = querySQL(String.format("PRAGMA table_info(%s)", tableName));
+        Cursor cursor1 = querySQL("select * from " + tableName);
         List<TableInfo.Column> columns = new ArrayList<>();
         TableInfo tableInfo = new TableInfo();
         if (cursor != null) {
@@ -128,12 +130,16 @@ public class SQLiteWrapperImpl implements SQLiteWrapper {
                 column.notnull = cursor.getInt(cursor.getColumnIndex("notnull")) == 1;
                 column.pk = cursor.getInt(cursor.getColumnIndex("pk")) == 1;
                 column.dflt_value = cursor.getString(cursor.getColumnIndex("dflt_value"));
+                if (cursor1 != null && cursor1.moveToFirst()) {
+                    column.typeInt = cursor1.getType(column.cid);
+                }
                 columns.add(column);
                 if (column.pk) {
                     tableInfo.primaryKeys.add(column);
                 }
                 count++;
             }
+            cursor.close();
         }
         tableInfo.columns = columns;
         return tableInfo;
@@ -159,6 +165,7 @@ public class SQLiteWrapperImpl implements SQLiteWrapper {
         Cursor cursor = querySQL("SELECT * from " + tableName + ";");
         if (cursor != null) {
             String[] columns = cursor.getColumnNames();
+            cursor.close();
             return Arrays.asList(columns);
         }
         return new ArrayList<>();
@@ -180,6 +187,7 @@ public class SQLiteWrapperImpl implements SQLiteWrapper {
                 }
                 result.add(rowData);
             }
+            cursor.close();
         }
         return result;
     }
@@ -202,7 +210,7 @@ public class SQLiteWrapperImpl implements SQLiteWrapper {
         for (int i=0; i<tableInfo.columns.size(); i++) {
             TableInfo.Column column = tableInfo.columns.get(i);
             // 主键或者二进制文件不可更改
-            if (column.pk || "Blob Data".equals(rowData.get(column.cid)) || "NULL".equals(rowData.get(column.cid))) {
+            if (column.pk || column.typeInt == Cursor.FIELD_TYPE_BLOB || column.typeInt == Cursor.FIELD_TYPE_NULL) {
                 continue;
             }
             cv.put(column.name, rowData.get(column.cid));
