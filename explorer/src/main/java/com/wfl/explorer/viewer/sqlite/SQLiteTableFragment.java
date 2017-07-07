@@ -34,7 +34,7 @@ public class SQLiteTableFragment extends Fragment {
     
     
     // View
-    SqliteTableView mSqliteTableView;
+    SQLiteTableView mSqliteTableView;
 
 
     public static SQLiteTableFragment createInstance(String path) {
@@ -69,7 +69,7 @@ public class SQLiteTableFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
-        mSqliteTableView = new SqliteTableView(getContext());
+        mSqliteTableView = new SQLiteTableView(getContext());
         mSqliteTableView.setBackgroundColor(Color.WHITE);
         mSqliteTableView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         mSQLiteWrapper.open();
@@ -79,7 +79,7 @@ public class SQLiteTableFragment extends Fragment {
         mData = mSQLiteWrapper.getDataLimited(mTableName, 100);
         mSQLiteWrapper.close();
         mSqliteTableView.setDatas(mData);
-        mSqliteTableView.setOnTableActionsListener(mOnTableActionsListener);
+//        mSqliteTableView.setOnTableActionsListener(mOnTableActionsListener);
         return mSqliteTableView;
 
 //        return super.onCreateView(inflater, container, savedInstanceState);
